@@ -255,7 +255,7 @@ conf = {{{packageName}}}.Configuration(
         self.safe_chars_for_path_param = ''
         """Safe chars for path_param
         """
-        self.retries = z
+        self.retries = False  # no retry
         """Adding retries to override urllib3 default value 3
         """
         # Disable client side validation

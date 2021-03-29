@@ -3,6 +3,7 @@
 {{>partial_header}}
 
 import six
+import time
 
 
 class OpenApiException(Exception):
@@ -110,3 +111,42 @@ def render_path(path_to_item):
         else:
             result += "['{0}']".format(pth)
     return result
+
+
+def handle_error_and_retry(method, retries, retry_interval, *args, **kwargs):
+    """
+    Handle business-related errors and retry failed requests
+    Doc: https://www.notion.so/holistics/API-Client-Library-81fba8d85c4f4697bc6ba274310ffb58
+    """
+    if retries < 0:
+        raise Exception('retries must >= 0')
+    if retry_interval < 0:
+        raise Exception('retry interval must >= 0')
+
+    cur_retries = 0
+    while cur_retries <= retries:
+        cur_retries += 1
+        try:
+            return method(*args, **kwargs)
+        except Exception as e:
+            if not is_retriable(exception=e) or cur_retries >= retries:
+                raise transformed_exception(exception=e)
+            time.sleep(retry_interval)
+
+
+def is_retriable(exception):
+    return exception.status in [408,  # request timeout
+                                429,  # API rate limited
+                                502,  # bad gateway
+                                503,  # server unavailable
+                                504,  # gateway timeout
+                                ]
+
+
+def transformed_exception(exception):
+    """
+    Check exception status and map to a corresponding business-related exception
+    If not business-related, return exception as-is
+    """
+    # TODO
+    return exception

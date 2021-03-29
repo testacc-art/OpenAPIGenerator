@@ -12,7 +12,8 @@ import six
 from {{packageName}}.api_client import ApiClient
 from {{packageName}}.exceptions import (  # noqa: F401
     ApiTypeError,
-    ApiValueError
+    ApiValueError,
+    handle_error_and_retry,
 )
 
 
@@ -30,7 +31,7 @@ class {{classname}}(object):
         self.api_client = api_client
 {{#operation}}
 
-    def {{operationId}}(self, {{#sortParamsByRequiredFlag}}{{#allParams}}{{#required}}{{paramName}}, {{/required}}{{/allParams}}{{/sortParamsByRequiredFlag}}**kwargs):  # noqa: E501
+    def {{operationId}}(self, {{#sortParamsByRequiredFlag}}{{#allParams}}{{#required}}{{paramName}}, {{/required}}{{/allParams}}{{/sortParamsByRequiredFlag}}retries=3, retry_interval=3, **kwargs):  # noqa: E501
         """{{#summary}}{{{.}}}{{/summary}}{{^summary}}{{operationId}}{{/summary}}  # noqa: E501
 
 {{#notes}}
@@ -62,7 +63,13 @@ class {{classname}}(object):
                  returns the request thread.
         """
         kwargs['_return_http_data_only'] = True
-        return self.{{operationId}}_with_http_info({{#sortParamsByRequiredFlag}}{{#allParams}}{{#required}}{{paramName}}, {{/required}}{{/allParams}}{{/sortParamsByRequiredFlag}}**kwargs)  # noqa: E501
+        return handle_error_and_retry(
+                self.{{operationId}}_with_http_info,  # noqa: E501
+                retries, 
+                retry_interval,
+                {{#sortParamsByRequiredFlag}}{{#allParams}}{{#required}}{{paramName}}, 
+                {{/required}}{{/allParams}}{{/sortParamsByRequiredFlag}}**kwargs
+        )
 
     def {{operationId}}_with_http_info(self, {{#sortParamsByRequiredFlag}}{{#allParams}}{{#required}}{{paramName}}, {{/required}}{{/allParams}}{{/sortParamsByRequiredFlag}}**kwargs):  # noqa: E501
         """{{#summary}}{{{.}}}{{/summary}}{{^summary}}{{operationId}}{{/summary}}  # noqa: E501
