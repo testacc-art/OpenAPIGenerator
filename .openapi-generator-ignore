@@ -1,0 +1,13 @@
+# OpenAPI Generator Ignore
+# Lines beginning with a # are comments
+
+# Exclude all
+/**
+.openapi-generator/**
+
+# Except
+!openapi_client/**
+!.gitignore
+!setup.py
+!setup.cfg
+!requirements.txt
