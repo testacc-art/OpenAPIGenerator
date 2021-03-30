@@ -4,6 +4,7 @@
 
 import six
 import time
+import json
 
 
 class OpenApiException(Exception):
@@ -90,7 +91,7 @@ class ApiException(OpenApiException):
 
     def __str__(self):
         """Custom error messages for exception"""
-        error_message = "({0})\n"\
+        error_message = "({0})\n" \
                         "Reason: {1}\n".format(self.status, self.reason)
         if self.headers:
             error_message += "HTTP response headers: {0}\n".format(
@@ -100,6 +101,47 @@ class ApiException(OpenApiException):
             error_message += "HTTP response body: {0}\n".format(self.body)
 
         return error_message
+
+
+class BaseError(Exception):
+    """
+    For more details, please refer to:
+    https://docs.holistics.io/api/v2/#tag/Errors
+    """
+
+    def __init__(self, message, details=None):
+        self.message = message
+        self.details = details
+
+
+class RecordError(BaseError):
+    def __init__(self, message, details=None, record=None):
+        super(RecordError, self).__init__(message, details)
+        self.record = record
+
+
+class InvalidParameterError(BaseError):
+    ...
+
+
+class AuthError(BaseError):
+    ...
+
+
+class MaintenanceError(BaseError):
+    ...
+
+
+class TrialExpiredError(BaseError):
+    ...
+
+
+class PermissionDeniedError(BaseError):
+    ...
+
+
+class InternalHolisticsError(BaseError):
+    ...
 
 
 def render_path(path_to_item):
@@ -128,9 +170,9 @@ def handle_error_and_retry(method, retries, retry_interval, *args, **kwargs):
         cur_retries += 1
         try:
             return method(*args, **kwargs)
-        except Exception as e:
+        except ApiException as e:
             if not is_retriable(exception=e) or cur_retries >= retries:
-                raise transformed_exception(exception=e)
+                raise transformed_exception(exception=e) from None
             time.sleep(retry_interval)
 
 
@@ -148,5 +190,18 @@ def transformed_exception(exception):
     Check exception status and map to a corresponding business-related exception
     If not business-related, return exception as-is
     """
-    # TODO
+    bussiness_error_classes = {
+        "BaseError": BaseError,
+        "RecordError": RecordError,
+        "InvalidParameterError": InvalidParameterError,
+        "AuthError": AuthError,
+        "MaintenanceError": MaintenanceError,
+        "TrialExpiredError": TrialExpiredError,
+        "PermissionDeniedError": PermissionDeniedError,
+        "InternalHolisticsError": InternalHolisticsError
+    }
+    error_body = json.loads(exception.body)
+    error_type = error_body.pop('type')
+    if error_type in bussiness_error_classes:
+        return bussiness_error_classes[error_type](**error_body)
     return exception
