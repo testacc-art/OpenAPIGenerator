@@ -19,6 +19,14 @@ from {{packageName}}.exceptions import ApiTypeError
 from {{packageName}}.exceptions import ApiValueError
 from {{packageName}}.exceptions import ApiKeyError
 from {{packageName}}.exceptions import ApiException
+from {{packageName}}.exceptions import BaseError
+from {{packageName}}.exceptions import RecordError
+from {{packageName}}.exceptions import InvalidParameterError
+from {{packageName}}.exceptions import AuthError
+from {{packageName}}.exceptions import MaintenanceError
+from {{packageName}}.exceptions import TrialExpiredError
+from {{packageName}}.exceptions import PermissionDeniedError
+from {{packageName}}.exceptions import InternalHolisticsError
 # import models into sdk package
 {{#models}}{{#model}}from {{modelPackage}}.{{classFilename}} import {{classname}}
 {{/model}}{{/models}}
