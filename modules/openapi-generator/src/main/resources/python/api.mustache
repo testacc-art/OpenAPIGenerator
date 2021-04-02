@@ -63,13 +63,14 @@ class {{classname}}(object):
                  returns the request thread.
         """
         kwargs['_return_http_data_only'] = True
-        return handle_error_and_retry(
+        r = handle_error_and_retry(
                 self.{{operationId}}_with_http_info,  # noqa: E501
                 retries, 
                 retry_interval,
                 {{#sortParamsByRequiredFlag}}{{#allParams}}{{#required}}{{paramName}}, 
                 {{/required}}{{/allParams}}{{/sortParamsByRequiredFlag}}**kwargs
         )
+        return r if isinstance(r, dict) else r.to_dict()
 
     def {{operationId}}_with_http_info(self, {{#sortParamsByRequiredFlag}}{{#allParams}}{{#required}}{{paramName}}, {{/required}}{{/allParams}}{{/sortParamsByRequiredFlag}}**kwargs):  # noqa: E501
         """{{#summary}}{{{.}}}{{/summary}}{{^summary}}{{operationId}}{{/summary}}  # noqa: E501
