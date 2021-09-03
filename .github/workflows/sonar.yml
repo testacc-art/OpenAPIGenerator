@@ -16,7 +16,6 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
         check-latest: true
-        cache: 'maven'
     - name: Cache local Maven repository
       uses: actions/cache@v2
       with:
