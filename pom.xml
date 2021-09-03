@@ -617,7 +617,6 @@
                 </plugins>
             </reporting>
         </profile>
-        <!-- Samples -->
         <profile>
             <id>android-client</id>
             <activation>
